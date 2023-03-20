@@ -1,26 +1,30 @@
 function getLeft({ x, y }) {
-    return { x: Math.max(0, x - 1), y };
+    return { x: x - 1, y };
 }
-function getRight({ x, y }, max) {
-    return { x: Math.min(max, x + 1), y }
+function getRight({ x, y }) {
+    return { x: x + 1, y }
 }
 function getUp({ x, y }) {
-    return { x, y: Math.max(0, y - 1) };
+    return { x, y: y - 1 };
 }
-function getDown({ x, y }, max) {
-    return { x, y: Math.min(max, y + 1) };
+function getDown({ x, y }) {
+    return { x, y: y + 1 };
 }
-function getTopRight({ x, y }, max) {
-    return { x: Math.min(max, x + 1), y: Math.max(0, y - 1 ) };
+function getTopRight({ x, y }) {
+    return { x: x + 1, y: y - 1 };
 }
-function getBottomRight({ x, y }, max) {
-    return { x: Math.min(max, x + 1), y: Math.min(max, y + 1 ) };
+function getBottomRight({ x, y }) {
+    return { x: x + 1, y: y + 1 };
 }
-function getBottomLeft({ x, y }, max) {
-    return { x: Math.max(0, x - 1), y: Math.min(max, y + 1 ) };
+function getBottomLeft({ x, y }) {
+    return { x: x - 1, y: y + 1 };
 }
-function getTopLeft({ x, y }, max) {
-    return { x: Math.max(0, x - 1), y: Math.max(0, y - 1 ) };
+function getTopLeft({ x, y }) {
+    return { x: x - 1, y: y - 1 };
+}
+
+const onGrid = ({x, y}, grid) => {
+    return (x >= 0 && x < grid.length && y >= 0 && y < grid.length)
 }
 
 function getSurrounding(coords, grid) {
@@ -33,12 +37,12 @@ function getSurrounding(coords, grid) {
         getBottomLeft(coords, grid.length - 1),
         getLeft(coords),
         getTopLeft(coords, grid.length - 1)
-    ]
+    ].filter((_coords) => onGrid(_coords, grid));
 }
 
 
 function minesInProximity(coords, grid) {
-    const surroundings = getSurrounding(coords, grid)
+    const surroundings = getSurrounding(coords, grid);
     return surroundings.reduce((sum, {x, y}) => {
         if (grid[y][x].isMine) { sum ++};
         return sum;
@@ -46,7 +50,8 @@ function minesInProximity(coords, grid) {
 }
 
 export default function updateData(grid, coords) {
-    if (!grid[coords.y][coords.x]) {
+    if (!onGrid(coords, grid)) {
+        return grid;
     }
     if (grid[coords.y][coords.x].isSeen) {
         return grid;
@@ -69,10 +74,10 @@ export default function updateData(grid, coords) {
     let up = getUp(coords);
     updateData(grid, up)
 
-    let right = getRight(coords, grid.length - 1);
+    let right = getRight(coords);
     updateData(grid, right)
 
-    let down = getDown(coords, grid.length - 1);
+    let down = getDown(coords);
     updateData(grid, down);
 
     let left = getLeft(coords);

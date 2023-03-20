@@ -7,6 +7,21 @@ let Cell = ({ isMine = false, solved = false, x, y, sweep, value }) => {
   const handleClick = () => {
     sweep(x, y);
   }
+
+  let styles = {
+    background: "#b4a7a7"
+  }
+
+//   if (isMine) {
+//     styles.background = 'red';
+//   }
+
+  if (value === 0) {
+    styles.background = '#8b8a8a';
+  }
+
+  let text = value === 0 ? '' : value;
+
   return (
     <div onClick={handleClick}
       style={{
@@ -14,26 +29,24 @@ let Cell = ({ isMine = false, solved = false, x, y, sweep, value }) => {
         height: "19px",
         marginLeft: "1px",
         marginBottom: "1px",
-        background: isMine ? 'red' : "#b4a7a7",
         fontSize: "12px",
         fontWeight: "bold",
         fontFamily: "arial",
         justifyContent: "center",
         alignItems: "center",
-        display: "flex"
+        display: "flex",
+        ...styles
       }}
     >
-      {solved ? status : value}
+      {solved ? status : text}
     </div>
   );
 };
 
 
-function Grid({ data: rows, sweep, gameOver }) {
-  let [solved, setSolved] = useState(false);
+function Grid({ data: rows, sweep, gameOver, solved }) {
   return (
     <>
-      <button onClick={() => setSolved(!solved)}>Toggle Solution</button>
       { gameOver && <span>Game Over :(</span>}
       <div
         style={{
@@ -67,8 +80,29 @@ export default function MyApp({ data: _data }) {
         let newData = [...prevData];
         let grid = updateData(newData, {x, y });
         return grid;
-    })
+    });
   }
 
-  return <Grid data={data} sweep={sweep} gameOver={gameOver} />;
+  let solved = true;
+  let breakLoop = false;
+
+  for (var y = 0; y < data.length; y++) {
+    for (var x = 0; x < data.length; x++) {
+        if (data[y][x].isSeen === false && data[y][x].isMine === false) {
+            solved = false;
+            breakLoop = true;
+            break;
+        }
+    }
+    if (breakLoop) { break ;}
+  }
+
+  return (
+    <div>
+        {/* <button onClick={() => setSolved(!solved)}>Toggle Solution</button> */}
+        { solved ? <span>Congrats!!!!</span> : ''}
+        <Grid data={data} sweep={sweep} gameOver={gameOver} solved={solved}/>
+    </div>
+  )
+  ;
 }

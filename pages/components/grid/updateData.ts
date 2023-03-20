@@ -1,78 +1,82 @@
-function getLeft({ x, y }, distance=1) {
-    return { x: Math.max(0, x - distance), y };
+function getLeft({ x, y }) {
+    return { x: Math.max(0, x - 1), y };
+}
+function getRight({ x, y }, max) {
+    return { x: Math.min(max, x + 1), y }
+}
+function getUp({ x, y }) {
+    return { x, y: Math.max(0, y - 1) };
+}
+function getDown({ x, y }, max) {
+    return { x, y: Math.min(max, y + 1) };
+}
+function getTopRight({ x, y }, max) {
+    return { x: Math.min(max, x + 1), y: Math.max(0, y - 1 ) };
+}
+function getBottomRight({ x, y }, max) {
+    return { x: Math.min(max, x + 1), y: Math.min(max, y + 1 ) };
+}
+function getBottomLeft({ x, y }, max) {
+    return { x: Math.max(0, x - 1), y: Math.min(max, y + 1 ) };
+}
+function getTopLeft({ x, y }, max) {
+    return { x: Math.max(0, x - 1), y: Math.max(0, y - 1 ) };
 }
 
-function getRight({ x, y }, distance=1, max) {
-    return { x: Math.min(max, x + distance), y }
+function getSurrounding(coords, grid) {
+    return [
+        getUp(coords),
+        getTopRight(coords, grid.length - 1),
+        getRight(coords, grid.length - 1),
+        getBottomRight(coords, grid.length - 1),
+        getDown(coords, grid.length - 1),
+        getBottomLeft(coords, grid.length - 1),
+        getLeft(coords),
+        getTopLeft(coords, grid.length - 1)
+    ]
 }
 
-function getUp({ x, y }, distance=1) {
-    return { x, y: Math.max(0, y - distance) };
-}
-function getDown({ x, y }, distance=1, max) {
-    return { x, y: Math.min(max, y + distance) };
-}
 
-
-function proximityToMine(coords, grid) {
-    let left = getLeft(coords);
-    let right = getRight(coords, 1, grid.length - 1);
-    let up = getUp(coords);
-    let down = getDown(coords, 1, grid.length - 1);
-    if (
-        grid[left.y][left.x].isMine === true ||
-        grid[right.y][right.x].isMine === true ||
-        grid[up.y][up.x].isMine === true ||
-        grid[down.y][down.x].isMine === true
-        ) { return 1 }
-
-    left = getLeft(coords, 2);
-    right = getRight(coords, 2, grid.length - 1);
-    up = getUp(coords, 2);
-    down = getDown(coords, 2, grid.length - 1);
-
-    if (
-        grid[left.y][left.x].isMine === true ||
-        grid[right.y][right.x].isMine === true ||
-        grid[up.y][up.x].isMine === true ||
-        grid[down.y][down.x].isMine === true
-        ) { return 2 }
-
-    return 0;
+function minesInProximity(coords, grid) {
+    const surroundings = getSurrounding(coords, grid)
+    return surroundings.reduce((sum, {x, y}) => {
+        if (grid[y][x].isMine) { sum ++};
+        return sum;
+    }, 0)
 }
 
 export default function updateData(grid, coords) {
-    console.log(`lookng at x:${coords.x}, y:${coords.y}`);
+    if (!grid[coords.y][coords.x]) {
+    }
     if (grid[coords.y][coords.x].isSeen) {
-        console.log(`x:${coords.x}, y:${coords.y} is seen`);
         return grid;
     }
 
     if (grid[coords.y][coords.x].isMine) {
-        console.log(`x: ${coords.x}, y: ${coords.y} is a mine`);
         return grid;
     }
 
     // Set proximity value
-    let proximity = proximityToMine(coords, grid);
-    grid[coords.y][coords.x].value = proximity;
+    let count = minesInProximity(coords, grid);
+    grid[coords.y][coords.x].value = count;
     grid[coords.y][coords.x].isSeen = true;
-    if (proximity !== 0) {
+    if (count > 0) {
         return grid;
     }
 
-
-
     // recurse
-    let left = getLeft(coords);
-    let right = getRight(coords, 1, grid.length);
-    let up = getUp(coords);
-    let down = getDown(coords, 1, grid.length);
 
-    updateData(grid, down);
-    updateData(grid, left)
-    updateData(grid, right)
+    let up = getUp(coords);
     updateData(grid, up)
+
+    let right = getRight(coords, grid.length - 1);
+    updateData(grid, right)
+
+    let down = getDown(coords, grid.length - 1);
+    updateData(grid, down);
+
+    let left = getLeft(coords);
+    updateData(grid, left)
 
     return grid;
 }

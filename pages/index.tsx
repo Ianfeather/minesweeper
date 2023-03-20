@@ -13,14 +13,14 @@ export default function Home() {
     value: ''
   })));
 
-  for (var i =0; i < 3 * size; i++) {
+  for (var i =0; i < 1 * size; i++) {
     let x = Math.ceil(Math.random() * (size - 1));
     let y = Math.ceil(Math.random() * (size - 1));
     if (data[y][x].isMine === false) {
         data[y][x].isMine = true;
     }
   }
-  data[0][0].isMine = true;
+  data[10][29].isMine = true;
 
   return (
     <>
